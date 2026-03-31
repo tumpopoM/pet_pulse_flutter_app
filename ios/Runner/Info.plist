@@ -66,5 +66,9 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>PetPulse ต้องการเข้าถึงคลังรูปภาพเพื่อเลือกรูปโปรไฟล์ให้น้องแมวของคุณค่ะ</string>
+	<key>NSCameraUsageDescription</key>
+	<string>PetPulse ต้องการเข้าถึงกล้องถ่ายรูปเพื่อถ่ายรูปโปรไฟล์ให้น้องแมวของคุณค่ะ</string>
 </dict>
 </plist>

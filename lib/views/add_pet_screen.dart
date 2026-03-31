@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 import '../models/pet.dart';
 import '../providers/pet_provider.dart';
 import 'package:uuid/uuid.dart';
+import 'dart:io';
 
 class AddPetScreen extends ConsumerStatefulWidget {
   const AddPetScreen({super.key});
@@ -15,6 +17,7 @@ class _AddPetScreenState extends ConsumerState<AddPetScreen> {
   final _nameController = TextEditingController();
   final _breedController = TextEditingController();
   late DateTime _selectedDate;
+  String? _imagePath;
 
   @override
   void initState() {
@@ -46,6 +49,26 @@ class _AddPetScreenState extends ConsumerState<AddPetScreen> {
     Navigator.pop(context);
   }
 
+  Future<void> _pickImage() async {
+    final ImagePicker picker = ImagePicker();
+    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+
+    if (image != null) {
+      // ในที่นี้เรายังไม่ได้เก็บ imagePath ไว้ใน Pet model
+      // แต่ถ้าต้องการเก็บก็สามารถเพิ่มฟิลด์ imagePath ใน Pet และอัพเดตโค้ดที่นี่ได้เลย
+      setState(() {
+        _imagePath = image.path;
+      });
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('เลือกรูปภาพสำเร็จ')));
+    } else {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('ไม่ได้เลือกรูปภาพ')));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -66,9 +89,44 @@ class _AddPetScreenState extends ConsumerState<AddPetScreen> {
               decoration: const InputDecoration(labelText: 'สายพันธุ์'),
             ),
             const SizedBox(height: 16),
+            GestureDetector(
+              onTap: _pickImage,
+              child: Container(
+                width: double.infinity,
+                height: 150,
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  border: Border.all(color: Colors.grey),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+
+                //child: const Center(child: Text('แตะเพื่อเลือกรูปภาพ')),
+                child: _imagePath == null
+                    // ? const Center(
+                    //     child: Text('แตะเพื่อเลือกรูปภาพ'),
+                    //   ) //Image.file(File(_imagePath!), fit: BoxFit.cover),
+                    ? const Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.add_a_photo, size: 50, color: Colors.grey),
+                          SizedBox(height: 8),
+                          Text('เพิ่มรูปน้องแมว'),
+                        ],
+                      )
+                    : ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: Image.file(
+                          File(_imagePath!),
+                          width: double.infinity,
+                          height: 150,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+              ),
+            ),
+            const SizedBox(height: 16),
             Row(
               children: [
-                //Text('วันเกิด: ${_selectedDate.toLocal()}'.split(' ')[0]),
                 Text(
                   'วันที่: ${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}',
                 ),
@@ -95,11 +153,11 @@ class _AddPetScreenState extends ConsumerState<AddPetScreen> {
             const Spacer(),
             ElevatedButton(
               onPressed: _savePet,
-              child: const Text('บันทึกน้องแมว'),
               style: ElevatedButton.styleFrom(
                 minimumSize: const Size(double.infinity, 50),
                 backgroundColor: Colors.orange,
               ),
+              child: const Text('บันทึกน้องแมว'),
             ),
           ],
         ),
