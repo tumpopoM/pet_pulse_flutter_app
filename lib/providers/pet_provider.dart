@@ -2,7 +2,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/pet.dart';
 
 class PetNotifier extends Notifier<List<Pet>> {
-  // กำหนดค่าเริ่มต้น (Initial State) เป็นลิสต์ว่างๆ []
   @override
   List<Pet> build() {
     return [];
