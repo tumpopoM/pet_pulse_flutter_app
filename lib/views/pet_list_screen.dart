@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pet_pulse/views/add_pet_screen.dart';
 import '../providers/pet_provider.dart';
 
 class PetListScreen extends ConsumerWidget {
@@ -35,7 +36,9 @@ class PetListScreen extends ConsumerWidget {
             ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          // Navigate to AddPetScreen (to be implemented)
+          Navigator.of(
+            context,
+          ).push(MaterialPageRoute(builder: (context) => const AddPetScreen()));
         },
         child: const Icon(Icons.add),
       ),
