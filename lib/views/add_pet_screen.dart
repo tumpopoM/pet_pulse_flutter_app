@@ -102,9 +102,6 @@ class _AddPetScreenState extends ConsumerState<AddPetScreen> {
 
                 //child: const Center(child: Text('แตะเพื่อเลือกรูปภาพ')),
                 child: _imagePath == null
-                    // ? const Center(
-                    //     child: Text('แตะเพื่อเลือกรูปภาพ'),
-                    //   ) //Image.file(File(_imagePath!), fit: BoxFit.cover),
                     ? const Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
