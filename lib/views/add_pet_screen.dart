@@ -43,6 +43,7 @@ class _AddPetScreenState extends ConsumerState<AddPetScreen> {
       name: _nameController.text,
       breed: _breedController.text,
       birthDate: _selectedDate,
+      imagePath: _imagePath,
     );
 
     ref.read(petProvider.notifier).addPet(pet);
@@ -54,8 +55,6 @@ class _AddPetScreenState extends ConsumerState<AddPetScreen> {
     final XFile? image = await picker.pickImage(source: ImageSource.gallery);
 
     if (image != null) {
-      // ในที่นี้เรายังไม่ได้เก็บ imagePath ไว้ใน Pet model
-      // แต่ถ้าต้องการเก็บก็สามารถเพิ่มฟิลด์ imagePath ใน Pet และอัพเดตโค้ดที่นี่ได้เลย
       setState(() {
         _imagePath = image.path;
       });
