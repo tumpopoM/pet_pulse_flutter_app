@@ -1,13 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pet_pulse/models/pet.dart';
 import 'package:pet_pulse/views/add_pet_screen.dart';
 import '../providers/pet_provider.dart';
 import 'dart:io';
 
-class PetListScreen extends ConsumerWidget {
+class PetListScreen extends ConsumerStatefulWidget {
   const PetListScreen({super.key});
 
-  void _showDeleteDialog(BuildContext context, WidgetRef ref, pet) {
+  @override
+  ConsumerState<PetListScreen> createState() => _PetListScreenState();
+}
+
+class _PetListScreenState extends ConsumerState<PetListScreen> {
+  String _searchQuery = '';
+  bool _sortByAge = false;
+
+  void _showDeleteDialog(BuildContext context, WidgetRef ref, Pet pet) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -31,48 +40,123 @@ class PetListScreen extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final petList = ref.watch(petProvider);
+
+    List<Pet> filteredPets = petList.where((pet) {
+      return pet.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+          pet.breed.toLowerCase().contains(_searchQuery.toLowerCase());
+    }).toList();
+
+    if (_sortByAge) {
+      filteredPets.sort((a, b) => b.birthDate.compareTo(a.birthDate));
+    } else {
+      filteredPets.sort((a, b) => a.name.compareTo(b.name));
+    }
+
+    Widget _buildBody() {
+      if (petList.isEmpty) {
+        return const Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.pets, size: 100, color: Colors.grey),
+              SizedBox(height: 16),
+              Text('ยังไม่มีน้องแมวเลย เพิ่มสมาชิกตัวแรกกัน 🐾'),
+            ],
+          ),
+        );
+      }
+
+      if (filteredPets.isEmpty) {
+        return Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(16.0),
+              child: TextField(
+                onChanged: (value) => setState(() => _searchQuery = value),
+                decoration: const InputDecoration(
+                  labelText: 'ค้นหาชื่อน้องแมวหรือสายพันธุ์...',
+                  prefixIcon: Icon(Icons.search),
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ),
+            Expanded(
+              child: const Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.search_off, size: 100, color: Colors.grey),
+                    SizedBox(height: 16),
+                    Text('ไม่พบน้องแมวที่คุณค้นหา 😿'),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        );
+      }
+
+      return Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16.0),
+            child: TextField(
+              onChanged: (value) => setState(() => _searchQuery = value),
+              decoration: const InputDecoration(
+                labelText: 'ค้นหาชื่อน้องแมวหรือสายพันธุ์...',
+                prefixIcon: Icon(Icons.search),
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ),
+          Expanded(
+            child: ListView.builder(
+              itemCount: filteredPets.length,
+              itemBuilder: (context, index) {
+                final pet = filteredPets[index];
+                return ListTile(
+                  leading: pet.imagePath != null
+                      ? CircleAvatar(
+                          backgroundImage: FileImage(File(pet.imagePath!)),
+                        )
+                      : CircleAvatar(child: Icon(Icons.pets)),
+                  title: Text(pet.name),
+                  subtitle: Text('${pet.breed} - ${pet.ageDisplay}'),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.delete, color: Colors.red),
+                    onPressed: () => _showDeleteDialog(context, ref, pet),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      );
+    }
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('My Pets 🐾'),
         backgroundColor: Colors.orange,
+        actions: [
+          petList.isNotEmpty
+              ? IconButton(
+                  icon: Icon(
+                    _sortByAge ? Icons.calendar_month : Icons.sort_by_alpha,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _sortByAge = !_sortByAge;
+                    });
+                  },
+                )
+              : SizedBox(),
+        ],
       ),
-      body: petList.isEmpty
-          ? const Center(child: Text('ยังไม่มีน้องแมวเลย เพิ่มเลย!'))
-          : ListView.builder(
-              itemCount: petList.length,
-              itemBuilder: (context, index) {
-                final pet = petList[index];
-                return ListTile(
-                  leading: CircleAvatar(
-                    radius: 30,
-                    backgroundColor: Colors.orange[100],
-                    backgroundImage: pet.imagePath != null
-                        ? FileImage(File(pet.imagePath!))
-                        : null,
-                    child: pet.imagePath == null
-                        ? const Icon(Icons.pets, color: Colors.orange)
-                        : null,
-                  ),
-                  title: Text(
-                    pet.name,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18,
-                    ),
-                  ),
-                  subtitle: Text('${pet.breed} - ${pet.ageDisplay}'),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.delete, color: Colors.red),
-                    onPressed: () {
-                      _showDeleteDialog(context, ref, pet);
-                    },
-                  ),
-                );
-              },
-            ),
+      body: _buildBody(),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.of(
