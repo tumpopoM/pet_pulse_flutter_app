@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/pet.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
+import '../services/notification_service.dart';
 
 class PetNotifier extends Notifier<List<Pet>> {
   static const _storageKey = 'pet_list';
@@ -21,10 +22,10 @@ class PetNotifier extends Notifier<List<Pet>> {
 
   Future<void> _loadPets() async {
     final preferences = await SharedPreferences.getInstance();
-    final String? saveData = preferences.getString(_storageKey);
+    final String? savedData = preferences.getString(_storageKey);
 
-    if (saveData != null) {
-      final List<dynamic> decodedData = jsonDecode(saveData);
+    if (savedData != null) {
+      final List<dynamic> decodedData = jsonDecode(savedData);
       state = decodedData.map((item) => Pet.fromMap(item)).toList();
     }
   }
@@ -32,6 +33,31 @@ class PetNotifier extends Notifier<List<Pet>> {
   void addPet(Pet pet) {
     state = [...state, pet];
     _saveToStorage(state);
+
+    final notificationDate = DateTime.now().add(const Duration(seconds: 10));
+
+    print('--- กำลังตั้งเตือนสำหรับ ${pet.name} ในอีก 10 วินาที ---');
+    print('Scheduled Date: $notificationDate');
+
+    NotificationService()
+        .scheduleNotification(
+          id: pet.id.hashCode,
+          title: 'ถึงเวลาพาน้อง ${pet.name} ไปหาหมอแล้ว!🐾',
+          body: 'อย่าลืมพาน้องไปฉีดวัคซีนตามนัดนะคะ',
+          scheduledDate: notificationDate,
+        )
+        .then((_) => print('✅ ตั้งเตือนสำเร็จ!'))
+        .catchError((e) => print('❌ ตั้งเตือนพลาดเพราะ: $e'));
+
+    // print('--- เริ่มนับถอยหลัง 10 วินาทีในแอป ---');
+
+    // // ใช้ Future.delayed ของ Dart เองเลยค่ะ ไม่ต้องง้อระบบ Schedule ของ OS
+    // Future.delayed(const Duration(seconds: 10), () {
+    //   print('--- ครบ 10 วินาทีแล้ว สั่งเด้งทันที! ---');
+
+    //   // เรียกใช้ฟังก์ชันที่ "เด้งแน่นอน" ที่คุณเมเพิ่งเทสผ่านไปตะกี้ค่ะ
+    //   NotificationService().showInstantNotification();
+    // });
   }
 
   void deletePet(String id) {
