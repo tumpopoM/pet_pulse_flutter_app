@@ -18,6 +18,9 @@ class _AddPetScreenState extends ConsumerState<AddPetScreen> {
   final _breedController = TextEditingController();
   late DateTime _selectedDate;
   String? _imagePath;
+  DateTime? _selectedVaccineDate;
+  TimeOfDay? _selectedTime;
+  DateTime? finalSchedule;
 
   @override
   void initState() {
@@ -38,12 +41,24 @@ class _AddPetScreenState extends ConsumerState<AddPetScreen> {
       return;
     }
 
+    if (_selectedVaccineDate != null && _selectedTime != null) {
+      finalSchedule = DateTime(
+        _selectedVaccineDate!.year,
+        _selectedVaccineDate!.month,
+        _selectedVaccineDate!.day,
+        _selectedTime!.hour,
+        _selectedTime!.minute,
+      );
+    }
+
     final pet = Pet(
       id: const Uuid().v4(),
       name: _nameController.text,
       breed: _breedController.text,
       birthDate: _selectedDate,
       imagePath: _imagePath,
+      vaccineSchedule: finalSchedule,
+      isVaccinated: false,
     );
 
     ref.read(petProvider.notifier).addPet(pet);
@@ -65,6 +80,34 @@ class _AddPetScreenState extends ConsumerState<AddPetScreen> {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('ไม่ได้เลือกรูปภาพ')));
+    }
+  }
+
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now().add(const Duration(days: 1)),
+      firstDate: DateTime.now(),
+      lastDate: DateTime(2030),
+    );
+
+    if (picked != null) {
+      setState(() {
+        _selectedVaccineDate = picked;
+        debugPrint(_selectedVaccineDate.toString());
+      });
+    }
+  }
+
+  Future<void> _pickTime(BuildContext context) async {
+    final TimeOfDay? picked = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.now(),
+    );
+    if (picked != null) {
+      setState(() {
+        _selectedTime = picked;
+      });
     }
   }
 
@@ -143,6 +186,38 @@ class _AddPetScreenState extends ConsumerState<AddPetScreen> {
                     }
                   },
                   child: const Text('เลือกวันเกิด'),
+                ),
+              ],
+            ),
+            Row(
+              children: [
+                // const Icon(Icons.calendar_today),
+                // SizedBox(width: 8),
+                Text(
+                  _selectedDate == null
+                      ? 'ยังไม่ได้เลือกวันนัดหมอ'
+                      : 'วันนัดฉีดวัคซีน: ${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}',
+                ),
+                const Spacer(),
+                ElevatedButton(
+                  onPressed: () => _selectDate(context),
+                  child: const Text('เลือกวันนัดฉีดวัคซีน'),
+                ),
+              ],
+            ),
+            Row(
+              children: [
+                // const Icon(Icons.access_time),
+                // SizedBox(width: 8),
+                Text(
+                  _selectedTime == null
+                      ? 'ยังไม่ได้เลือกเวลาแจ้งเตือน'
+                      : 'เวลา:${_selectedTime!.format(context)}',
+                ),
+                const Spacer(),
+                ElevatedButton(
+                  onPressed: () => _pickTime(context),
+                  child: const Text('เลือกเวลาแจ้งเตือน'),
                 ),
               ],
             ),

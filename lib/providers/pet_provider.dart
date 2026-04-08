@@ -34,20 +34,18 @@ class PetNotifier extends Notifier<List<Pet>> {
     state = [...state, pet];
     _saveToStorage(state);
 
-    final notificationDate = DateTime.now().add(const Duration(seconds: 10));
-
-    print('--- กำลังตั้งเตือนสำหรับ ${pet.name} ในอีก 10 วินาที ---');
-    print('Scheduled Date: $notificationDate');
-
-    NotificationService()
-        .scheduleNotification(
-          id: pet.id.hashCode,
-          title: 'ถึงเวลาพาน้อง ${pet.name} ไปหาหมอแล้ว!🐾',
-          body: 'อย่าลืมพาน้องไปฉีดวัคซีนตามนัดนะคะ',
-          scheduledDate: notificationDate,
-        )
-        .then((_) => print('✅ ตั้งเตือนสำเร็จ!'))
-        .catchError((e) => print('❌ ตั้งเตือนพลาดเพราะ: $e'));
+    if (pet.vaccineSchedule != null) {
+      final notificationDate = pet.vaccineSchedule!;
+      NotificationService()
+          .scheduleNotification(
+            id: pet.id.hashCode,
+            title: 'นัดฉีดวัคซีนน้อง ${pet.name}!🐾',
+            body: 'วันนี้มีนัดพาน้องไปหาหมอนะคะ',
+            scheduledDate: notificationDate,
+          )
+          .then((_) => print('✅ ตั้งเตือนนัดจริงสำเร็จที่!: $notificationDate'))
+          .catchError((e) => print('❌ ตั้งเตือนพลาดเพราะ: $e'));
+    }
 
     // print('--- เริ่มนับถอยหลัง 10 วินาทีในแอป ---');
 

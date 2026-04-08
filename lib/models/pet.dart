@@ -7,6 +7,7 @@ class Pet {
   final DateTime birthDate;
   final String? imagePath;
   final bool isVaccinated;
+  final DateTime? vaccineSchedule;
 
   Pet({
     required this.id,
@@ -15,6 +16,7 @@ class Pet {
     required this.birthDate,
     this.imagePath,
     this.isVaccinated = false,
+    this.vaccineSchedule,
   });
 
   String get ageDisplay {
@@ -42,6 +44,7 @@ class Pet {
       'birthDate': birthDate.toIso8601String(),
       'imagePath': imagePath,
       'isVaccinated': isVaccinated,
+      'vaccineSchedule': vaccineSchedule?.toIso8601String(),
     };
   }
 
@@ -53,6 +56,9 @@ class Pet {
       birthDate: DateTime.parse(map['birthDate']),
       imagePath: map['imagePath'],
       isVaccinated: map['isVaccinated'] ?? false,
+      vaccineSchedule: map['vaccineSchedule'] != null
+          ? DateTime.parse(map['vaccineSchedule'])
+          : null,
     );
   }
 }
