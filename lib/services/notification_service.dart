@@ -99,4 +99,13 @@ class NotificationService {
       notificationDetails,
     );
   }
+
+  Future<void> cancelNotification(int id) async {
+    await _notifications.cancel(id);
+    print('🗑️ ยกเลิกการแจ้งเตือน ID: $id สำเร็จ');
+  }
+
+  Future<void> cancelAllNotifications() async {
+    await _notifications.cancelAll();
+  }
 }

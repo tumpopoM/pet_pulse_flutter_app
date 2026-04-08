@@ -46,16 +46,6 @@ class PetNotifier extends Notifier<List<Pet>> {
           .then((_) => print('✅ ตั้งเตือนนัดจริงสำเร็จที่!: $notificationDate'))
           .catchError((e) => print('❌ ตั้งเตือนพลาดเพราะ: $e'));
     }
-
-    // print('--- เริ่มนับถอยหลัง 10 วินาทีในแอป ---');
-
-    // // ใช้ Future.delayed ของ Dart เองเลยค่ะ ไม่ต้องง้อระบบ Schedule ของ OS
-    // Future.delayed(const Duration(seconds: 10), () {
-    //   print('--- ครบ 10 วินาทีแล้ว สั่งเด้งทันที! ---');
-
-    //   // เรียกใช้ฟังก์ชันที่ "เด้งแน่นอน" ที่คุณเมเพิ่งเทสผ่านไปตะกี้ค่ะ
-    //   NotificationService().showInstantNotification();
-    // });
   }
 
   void deletePet(String id) {
@@ -69,6 +59,23 @@ class PetNotifier extends Notifier<List<Pet>> {
         if (pet.id == updatedPet.id) updatedPet else pet,
     ];
     _saveToStorage(state);
+
+    NotificationService().cancelNotification(updatedPet.id.hashCode);
+
+    if (updatedPet.vaccineSchedule != null) {
+      final notificationDate = updatedPet.vaccineSchedule!;
+      NotificationService()
+          .scheduleNotification(
+            id: updatedPet.id.hashCode,
+            title: 'นัดฉีดวัคซีนน้อง ${updatedPet.name}!🐾',
+            body: 'วันนี้มีนัดพาน้องไปหาหมอนะคะ',
+            scheduledDate: notificationDate,
+          )
+          .then(
+            (_) => print('✅ อัปเดตเตือนนัดจริงสำเร็จที่!: $notificationDate'),
+          )
+          .catchError((e) => print('❌ อัปเดตเตือนพลาดเพราะ: $e'));
+    }
   }
 }
 

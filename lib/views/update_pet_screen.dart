@@ -6,16 +6,17 @@ import '../providers/pet_provider.dart';
 import 'package:uuid/uuid.dart';
 import 'dart:io';
 
-class AddPetScreen extends ConsumerStatefulWidget {
-  const AddPetScreen({super.key});
+class UpdatePetScreen extends ConsumerStatefulWidget {
+  final Pet pet;
+  const UpdatePetScreen({super.key, required this.pet});
 
   @override
-  ConsumerState<AddPetScreen> createState() => _AddPetScreenState();
+  ConsumerState<UpdatePetScreen> createState() => _UpdatePetScreenState();
 }
 
-class _AddPetScreenState extends ConsumerState<AddPetScreen> {
-  final _nameController = TextEditingController();
-  final _breedController = TextEditingController();
+class _UpdatePetScreenState extends ConsumerState<UpdatePetScreen> {
+  late TextEditingController _nameController;
+  late TextEditingController _breedController;
   late DateTime _selectedDate;
   String? _imagePath;
   DateTime? _selectedVaccineDate;
@@ -25,7 +26,21 @@ class _AddPetScreenState extends ConsumerState<AddPetScreen> {
   @override
   void initState() {
     super.initState();
-    _selectedDate = DateTime.now();
+    _nameController = TextEditingController(text: widget.pet.name);
+    _breedController = TextEditingController(text: widget.pet.breed);
+    _selectedDate = widget.pet.birthDate;
+    _imagePath = widget.pet.imagePath;
+    _selectedVaccineDate = widget.pet.vaccineSchedule;
+    _selectedTime = widget.pet.vaccineSchedule != null
+        ? TimeOfDay.fromDateTime(widget.pet.vaccineSchedule!)
+        : null;
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _breedController.dispose();
+    super.dispose();
   }
 
   void _savePet() {
@@ -51,17 +66,17 @@ class _AddPetScreenState extends ConsumerState<AddPetScreen> {
       );
     }
 
-    final pet = Pet(
-      id: const Uuid().v4(),
+    final updatedPet = Pet(
+      id: widget.pet.id,
       name: _nameController.text,
       breed: _breedController.text,
       birthDate: _selectedDate,
       imagePath: _imagePath,
       vaccineSchedule: finalSchedule,
-      isVaccinated: false,
+      isVaccinated: widget.pet.isVaccinated,
     );
 
-    ref.read(petProvider.notifier).addPet(pet);
+    ref.read(petProvider.notifier).updatePet(updatedPet);
     Navigator.pop(context);
   }
 
@@ -115,7 +130,7 @@ class _AddPetScreenState extends ConsumerState<AddPetScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('เพิ่มสมาชิกใหม่ 🐾'),
+        title: const Text('แก้ไขข้อมูลน้องแมว 🐾'),
         backgroundColor: Colors.orange,
       ),
       body: Padding(
@@ -229,7 +244,7 @@ class _AddPetScreenState extends ConsumerState<AddPetScreen> {
                 minimumSize: const Size(double.infinity, 50),
                 backgroundColor: Colors.orange,
               ),
-              child: const Text('บันทึกน้องแมว'),
+              child: const Text('อัปเดตข้อมูลน้องแมว'),
             ),
           ],
         ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pet_pulse/models/pet.dart';
 import 'package:pet_pulse/views/add_pet_screen.dart';
+import 'package:pet_pulse/views/update_pet_screen.dart';
 import '../providers/pet_provider.dart';
 import 'dart:io';
 
@@ -54,7 +55,7 @@ class _PetListScreenState extends ConsumerState<PetListScreen> {
       filteredPets.sort((a, b) => a.name.compareTo(b.name));
     }
 
-    Widget _buildBody() {
+    Widget buildBody() {
       if (petList.isEmpty) {
         return const Center(
           child: Column(
@@ -129,6 +130,14 @@ class _PetListScreenState extends ConsumerState<PetListScreen> {
                     icon: const Icon(Icons.delete, color: Colors.red),
                     onPressed: () => _showDeleteDialog(context, ref, pet),
                   ),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => UpdatePetScreen(pet: pet),
+                      ),
+                    );
+                  },
                 );
               },
             ),
@@ -156,7 +165,7 @@ class _PetListScreenState extends ConsumerState<PetListScreen> {
               : SizedBox(),
         ],
       ),
-      body: _buildBody(),
+      body: buildBody(),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.of(
